@@ -27,3 +27,21 @@ This is the first version of my first server using node and express.
 - Handling errors if happened during the user experience using the website.
 - The project was built with NodeJs on local machine as a first version object.
 - data are returned in json format to deal with clients.
+
+## Movies Library - Version 1.1
+
+## WRRC
+![WRRC for My Movie Library!](./after%20API.jpg "Trending Movies!")
+
+## Added steps
+
+1. Install nodemon using this command `npm install -g nodemon`  so you can see updated on your server without shutting down and restarting the server.
+2. Install two packages, one dealing with the API called `axios` and the other with a file added to our project called `.env` will deal with enviromental variables called `dotenv` using this command `npm install dotenv axios`.
+3. start the server typing nodemon.
+4. Then start adding functionalities from your API using the API source link and the data path you are requesting, after generating the API key of yours, then used methods of Async to avoide and handle promises `async` and `await`, or `.then` all of that after requiring (`dotenv.config()`) and once you type axios, it will require the package automatically using VSCode.
+
+## Added Features
+
+- the data is imported from an online source <https://developer.themoviedb.org/>
+- added new 4 paths the user can surf, Trending/Search/Upcoming/Top-Rated
+- The search path allows the user to search his movies for a result by passing a query value in the URL.

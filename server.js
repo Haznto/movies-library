@@ -2,7 +2,9 @@
 const data = require('./data.json')
 const express = require('express');
 const cors = require('cors');
+const axios  = require('axios');
 const app = express();
+require('dotenv').config();
 app.use(express.json()) // not necessary now. But remember it when used post method and getting info JSON from client.
 
 app.use(cors())
@@ -11,6 +13,10 @@ app.get('/favorite', getFavorite )
 app.get('/error', (req,res)=> { // testing error handler! go to the route so it shows
     chicken.fly()
 })
+app.get('/trending', handleTrendingMovies) // rout 1
+app.get('/search',handleSearch)  // rout 2
+app.get('/upcoming',handleUpcoming)  // rout 3
+app.get('/top-rated',handleTopRated)  // rout 4
 
 app.use('*', notFoundPage)
 app.use(function(err,req,res,next){
@@ -29,31 +35,70 @@ function notFoundPage(req,res) {
         "responseText": "Sorry, Page Not Found"
     })
 }
-function getLibaray(req,res) {
-    let movie = new Movie (data.title,data.genre_ids,data.original_language,data.original_title,data.poster_path,data.video,data.vote_average,data.overview,data.release_date,data.vote_count,data.id,data.adult,data.backdrop_path,data.popularity,data.media_type)
+  function getLibaray(req,res) {
+    let movie = new Movie (data.title,data.poster_path,data.overview,data.release_date,data.id)
     res.status(200).json(movie)
 }
 function getFavorite (req,res){
     res.send("Welcome to Favorite Page")
 }
 
-function Movie(title,genre_ids,original_language,original_title,poster_path,video,vote_average,overview,release_date,vote_count,id,adult,backdrop_path,popularity,media_type){
-    this.title = title;
-    this.genre_ids = genre_ids;
-    this.original_language = original_language;
-    this.original_title = original_title;
-    this.poster_path = poster_path;
-    this.video = video;
-    this.vote_average = vote_average;
-    this.overview = overview;
-    this.release_date = release_date;
-    this.vote_count = vote_count
-    this.id = id;
-    this.adult = adult;
-    this.backdrop_path = backdrop_path;
-    this.popularity = popularity;
-    this.media_type = media_type; // !!!!!!!!Waleed told us to include all the data inside our response!!!!!!!
-    // Movie.allMovies.push(this); Not needed now cause we have a single data obejct
+async function handleTrendingMovies(req,res) {
+    let axiosData = await axios.get(`${process.env.APISITE}trending/all/week?api_key=${process.env.APIKEY}`);
+    Movie.allMovies = []
+    axiosData.data.results.map(movie => new Movie(movie.name,movie.title,movie.poster_path,movie.overview,movie.release_date,movie.first_air_date,movie.id))
+    res.status(200).json({
+        trending : Movie.allMovies
+    })
+
 }
-// Movie.allMovies = [];Not needed now cause we have a single data obejct
-app.listen(3000,() => console.log('ran successfully'))
+function handleSearch(req,res) {
+    const searchMovie = req.query.query
+    console.log(searchMovie)
+    let axiosSearchData = axios.get(`${process.env.APISITE}search/movie?api_key=${process.env.APIKEY}&query=${searchMovie}`)
+    Movie.allMovies = []
+    // axiosSearchData.data.results.map(movie => new Movie(movie.name,movie.title,movie.poster_path,movie.overview,movie.release_date,movie.first_air_date,movie.id))
+    axiosSearchData.then(result =>{
+        result.data.results.map(movie => new Movie(movie.name,movie.title,movie.poster_path,movie.overview,movie.release_date,movie.first_air_date,movie.id))
+        if (searchMovie === undefined) {
+            res.status(200).json({
+                Message: "pass your search in the url after the word (search) as '?query=<the Name of your movie without the angle signs> , if your search is composed of more than one word seperate it with + sign' ",
+                Example: "http://localhost:3000/search?query=naruto"
+            })
+        }
+        else {
+            res.status(200).json({
+                ResultOfSearch: Movie.allMovies
+            })
+        }
+    });
+}
+async function handleUpcoming(req,res) {
+    const axiosData = await axios.get(`${process.env.APISITE}movie/upcoming?api_key=${process.env.APIKEY}`);
+    Movie.allMovies = []
+    axiosData.data.results.map(movie => new Movie(movie.name,movie.title,movie.poster_path,movie.overview,movie.release_date,movie.first_air_date,movie.id))
+    res.status(200).json({
+        Upcoming : Movie.allMovies
+    })
+}
+async function handleTopRated(req,res) {
+    const axiosData = await axios.get(`${process.env.APISITE}movie/top_rated?api_key=${process.env.APIKEY}`);
+    Movie.allMovies = []
+    axiosData.data.results.map(movie => new Movie(movie.name,movie.title,movie.poster_path,movie.overview,movie.release_date,movie.first_air_date,movie.id))
+    res.status(200).json({
+        Upcoming : Movie.allMovies
+    })
+}
+
+function Movie(name,title,poster_path,overview,release_date,first_air_date,id){
+    this.name = name;
+    this.id = id;
+    this.title = title;   
+    this.release_date = release_date;
+    this.first_air_date = first_air_date;
+    this.poster_path = poster_path;    
+    this.overview = overview;    
+    Movie.allMovies.push(this)
+}
+Movie.allMovies = []
+app.listen(process.env.PORTAL,() => console.log('ran successfully'))
