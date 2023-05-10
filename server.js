@@ -1,4 +1,5 @@
 "use strict"
+// IMPORTING DATA
 const data = require('./data.json')
 const express = require('express');
 const cors = require('cors');
@@ -6,7 +7,12 @@ const axios  = require('axios');
 const app = express();
 require('dotenv').config();
 app.use(express.json()) // not necessary now. But remember it when used post method and getting info JSON from client.
+const pg = require('pg');
+const client = new pg.Client(process.env.DBURL)
+// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
+//Executing paths
 app.use(cors())
 app.get('/', getLibaray )
 app.get('/favorite', getFavorite )
@@ -17,18 +23,25 @@ app.get('/trending', handleTrendingMovies) // rout 1
 app.get('/search',handleSearch)  // rout 2
 app.get('/upcoming',handleUpcoming)  // rout 3
 app.get('/top-rated',handleTopRated)  // rout 4
-
+app.get('/getMovies',handleDbMovies)
+app.post('/addMovie',handleAddingMovie)
 app.use('*', notFoundPage)
-app.use(function(err,req,res,next){
-    console.log("ERROR 500")
-    res.status(500).json({
-        "status": 500,
-        "responseText": "Sorry, something went wrong"
-    })  
-    // next(err) no other errorhandling middlewares to pass to .
-    
-})
+app.use(errorHandling)
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
+//Functions
+function errorHandling(err,req,res,next){
+    
+        console.log("ERROR 500")
+        res.status(500).json({
+            "status": 500,
+            "responseText": err.message || err
+        })  
+        // next(err) no other errorhandling middlewares to pass to .
+        
+    
+}
 function notFoundPage(req,res) {
     res.status(404).json({
         "status": 404,
@@ -42,7 +55,6 @@ function notFoundPage(req,res) {
 function getFavorite (req,res){
     res.send("Welcome to Favorite Page")
 }
-
 async function handleTrendingMovies(req,res) {
     let axiosData = await axios.get(`${process.env.APISITE}trending/all/week?api_key=${process.env.APIKEY}`);
     Movie.allMovies = []
@@ -89,7 +101,25 @@ async function handleTopRated(req,res) {
         Upcoming : Movie.allMovies
     })
 }
+function handleDbMovies(req,res){
+    const sql = 'select * from movies_list';
+    client.query(sql).then(selectedMovies =>{
+        res.json({
+            count: selectedMovies.rowCount,
+            movies: selectedMovies.rows
+        })
+    })
 
+}
+function handleAddingMovie(req,res) {
+ const userInput = req.body;
+ console.log(userInput)
+ const sql = `insert into movies_list(movie_id,title,overview,poster_path) values ($1,$2,$3,$4) returning *`;
+ const handleSqlInjection = [userInput.movie_id,userInput.title,userInput.overview,userInput.poster_path]
+ client.query(sql,handleSqlInjection).then(addedByUser =>{
+    res.status(201).json(addedByUser.rows)
+ })
+}
 function Movie(name,title,poster_path,overview,release_date,first_air_date,id){
     this.name = name;
     this.id = id;
@@ -101,4 +131,10 @@ function Movie(name,title,poster_path,overview,release_date,first_air_date,id){
     Movie.allMovies.push(this)
 }
 Movie.allMovies = []
-app.listen(process.env.PORTAL,() => console.log('ran successfully'))
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+
+client.connect().then(()=>{
+    app.listen(process.env.PORTAL,() => console.log('ran successfully'))
+})
