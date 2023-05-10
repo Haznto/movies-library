@@ -31,6 +31,7 @@ This is the first version of my first server using node and express.
 ## Movies Library - Version 1.1
 
 ## WRRC
+
 ![WRRC for My Movie Library!](./after%20API.jpg "Trending Movies!")
 
 ## Added steps
@@ -45,3 +46,19 @@ This is the first version of my first server using node and express.
 - the data is imported from an online source <https://developer.themoviedb.org/>
 - added new 4 paths the user can surf, Trending/Search/Upcoming/Top-Rated
 - The search path allows the user to search his movies for a result by passing a query value in the URL.
+
+## Movies Library - Version 1.2
+
+## WRRC 
+
+![WRRC for My Movie Library!](./afterDB.jpg "Trending Movies!")
+
+## Added steps
+
+1. Start your server installed from postgres packages using `sqlstart`.
+2. Connecting to your database using `psql`
+3. After that you install a package to connect your server and your database , just type in the terminal `npm install pg`
+4. then you have to require the package you just installed to use it on yourserver, getting data from the database require you to use two methods `(sql,query)` after creating a `client` to connect to your database link using `new pg.Client()` line 
+5. After creating a connection point you have to listen and connect to it once the server starts so wrap your app lister with `client.connect` method and don't forge about the promises.
+6. then you can start creating tables in your database manually or getting them done by a user then save them using`insert` methods from postgres then post requests, and require them or getting them using `select` method from postgres get request to show them for a user.
+7. don't forget to protect your database from `SQL Injecting`.
