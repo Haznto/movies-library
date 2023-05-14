@@ -62,3 +62,20 @@ This is the first version of my first server using node and express.
 5. After creating a connection point you have to listen and connect to it once the server starts so wrap your app lister with `client.connect` method and don't forge about the promises.
 6. then you can start creating tables in your database manually or getting them done by a user then save them using`insert` methods from postgres then post requests, and require them or getting them using `select` method from postgres get request to show them for a user.
 7. don't forget to protect your database from `SQL Injecting`.
+
+
+## Movies Library - Version 1.3
+
+## WRRC 
+
+![WRRC for My Movie Library!](./after%20CRUD.jpg "Trending Movies!")
+
+## Added steps
+
+1. Used put/patch and Delete requests to manipulate data in our databases, creating new endpoints linked to executable functions once the user request these endpoints
+
+## Added Features
+
+- Delete a movie from database using it's ID.
+- Updating the data about the movie using it's ID as reference.
+- selecting a certain movie to get it's data using it's ID as a refernece.

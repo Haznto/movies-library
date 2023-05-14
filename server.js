@@ -25,6 +25,9 @@ app.get('/upcoming',handleUpcoming)  // rout 3
 app.get('/top-rated',handleTopRated)  // rout 4
 app.get('/getMovies',handleDbMovies)
 app.post('/addMovie',handleAddingMovie)
+app.get('/getMovie/:id',handleSearchMovieById)
+app.put('/UPDATE/:id', updateMyMovieList)
+app.delete('/DELETE/:id',deleteMovieById)
 app.use('*', notFoundPage)
 app.use(errorHandling)
 //-----------------------------------------------------------------------
@@ -119,6 +122,48 @@ function handleAddingMovie(req,res) {
  client.query(sql,handleSqlInjection).then(addedByUser =>{
     res.status(201).json(addedByUser.rows)
  })
+}
+function handleSearchMovieById(req,res){
+    let id = req.params.id;
+    const sql = `select * from movies_list where id = ${id}`;
+    client.query(sql).then(gotById => { 
+        
+        let obj = gotById.rows[0];
+        console.log(obj)
+        if (obj !== undefined) {let constructed = new Movie(obj.name,obj.title,obj.poster_path,obj.overview,obj.release_date,obj.first_air_date,obj.movie_id)
+            res.status(200).json({
+                Messeage: 'Movie Found!',
+                result: constructed
+            })}
+        else {res.status(404).json({
+            Messeage: 'Movie NoT Found!'
+            
+        })}
+        //One way on handling
+        // let constructed = new Movie(obj.name,obj.title,obj.poster_path,obj.overview,obj.release_date,obj.first_air_date,obj.movie_id)
+        //     res.status(200).json({
+        //         Messeage: 'Movie Found!',
+        //         result: constructed
+        //     })
+    }) //.catch(err => errorHandling(err, req, res)) this might expose some information
+}
+function updateMyMovieList(req,res){
+    const id = req.params.id
+    let dataToUpdate = req.body
+const sql = `update movies_list set movie_id = $1, title = $2, overview = $3,poster_path=  $4 where id = $5 returning *` 
+const toUpdate = [dataToUpdate.movie_id,dataToUpdate.title,dataToUpdate.overview,dataToUpdate.poster_path,id] 
+client.query(sql, toUpdate).then(updated => res.status(202).json(updated.rows))
+}
+function deleteMovieById(req,res){
+const toDeleteID = req.params.id
+const sql = `delete from movies_list where id = ${toDeleteID}`
+client.query(sql).then(()=> {
+    res.status(204).json({
+        status: 204,
+        message:'The selected movie has been deleted successfully!'
+    })
+}).catch(err => errorHandling(err, req, res))
+
 }
 function Movie(name,title,poster_path,overview,release_date,first_air_date,id){
     this.name = name;
