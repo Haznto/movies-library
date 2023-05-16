@@ -9,6 +9,7 @@ require('dotenv').config();
 app.use(express.json()) // not necessary now. But remember it when used post method and getting info JSON from client.
 const pg = require('pg');
 const client = new pg.Client(process.env.DBURL)
+const PORTAL = process.env.PORTAL || 3005;
 // -----------------------------------------------------------------------
 // -----------------------------------------------------------------------
 
@@ -181,5 +182,5 @@ Movie.allMovies = []
 
 
 client.connect().then(()=>{
-    app.listen(process.env.PORTAL,() => console.log('ran successfully'))
+    app.listen(PORTAL,() => console.log('ran successfully'))
 })
