@@ -118,8 +118,8 @@ function handleDbMovies(req,res){
 function handleAddingMovie(req,res) {
  const userInput = req.body;
  console.log(userInput)
- const sql = `insert into movies_list(movie_id,title,overview,poster_path) values ($1,$2,$3,$4) returning *`;
- const handleSqlInjection = [userInput.movie_id,userInput.title,userInput.overview,userInput.poster_path]
+ const sql = `insert into movies_list(movie_id,title,overview,poster_path,user_Comment) values ($1,$2,$3,$4,$5) returning *`;
+ const handleSqlInjection = [userInput.id,userInput.title,userInput.overview,userInput.poster_path,userInput.userComment]
  client.query(sql,handleSqlInjection).then(addedByUser =>{
     res.status(201).json(addedByUser.rows)
  })
@@ -151,8 +151,8 @@ function handleSearchMovieById(req,res){
 function updateMyMovieList(req,res){
     const id = req.params.id
     let dataToUpdate = req.body
-const sql = `update movies_list set movie_id = $1, title = $2, overview = $3,poster_path=  $4 where id = $5 returning *` 
-const toUpdate = [dataToUpdate.movie_id,dataToUpdate.title,dataToUpdate.overview,dataToUpdate.poster_path,id] 
+const sql = `update movies_list set user_comment = $1  where id = $2 returning *` 
+const toUpdate = [dataToUpdate.user_comment,id] 
 client.query(sql, toUpdate).then(updated => res.status(202).json(updated.rows))
 }
 function deleteMovieById(req,res){
